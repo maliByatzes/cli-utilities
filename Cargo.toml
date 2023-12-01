@@ -1,0 +1,15 @@
+[package]
+name = "cli-utilities"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "echom"
+path = "src/echom.rs"
+
+[[bin]]
+name = "cargo"
+path = "src/cargo.rs"
+
+[dependencies]
+lexopt = "0.3.0"
