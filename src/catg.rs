@@ -7,6 +7,7 @@ use std::process;
 struct Args {
     files: Vec<String>,
     args_prov: bool,
+    number: bool,
 }
 
 fn parse_args() -> Result<Args, lexopt::Error> {
@@ -14,10 +15,14 @@ fn parse_args() -> Result<Args, lexopt::Error> {
 
     let mut files = Vec::new();
     let mut args_prov = false;
+    let mut number = false;
     let mut parser = lexopt::Parser::from_env();
 
     while let Some(arg) = parser.next()? {
         match arg {
+            Short('n') | Long("--number") => {
+                number = true;
+            }
             Value(val) => {
                 files.push(val.string()?);
             }
@@ -29,7 +34,29 @@ fn parse_args() -> Result<Args, lexopt::Error> {
         args_prov = true;
     }
 
-    Ok(Args { files, args_prov })
+    Ok(Args {
+        files,
+        args_prov,
+        number,
+    })
+}
+
+fn read_user_input() {
+    loop {
+        print!("> ");
+        let mut buffer = String::new();
+        stdout().flush().unwrap_or_else(|err| {
+            println!("Cannot flush stdout: {err}");
+            process::exit(2);
+        });
+
+        stdin().read_line(&mut buffer).unwrap_or_else(|err| {
+            println!("Cannot read user input: {err}");
+            process::exit(3);
+        });
+
+        print!("{buffer}");
+    }
 }
 
 fn print_files(args: &Args) -> Result<(), lexopt::Error> {
@@ -38,44 +65,16 @@ fn print_files(args: &Args) -> Result<(), lexopt::Error> {
             for file_path in &args.files {
                 /* Not ideal solution for now */
                 if file_path.trim() == "-" {
-                    loop {
-                        print!("> ");
-                        let mut buffer = String::new();
-                        stdout().flush().unwrap_or_else(|err| {
-                            println!("Cannot flush stdout: {err}");
-                            process::exit(2);
-                        });
-
-                        stdin().read_line(&mut buffer).unwrap_or_else(|err| {
-                            println!("Cannot read user input: {err}");
-                            process::exit(3);
-                        });
-
-                        print!("{buffer}");
-                    }
+                    read_user_input();
                 }
                 let contents = fs::read_to_string(file_path).unwrap_or_else(|err| {
                     println!("Cannot read file: {err}");
                     process::exit(1);
                 });
-                println!("{}", contents);
+                println!("{:?}", contents);
             }
         }
-        false => loop {
-            print!("> ");
-            let mut buffer = String::new();
-            stdout().flush().unwrap_or_else(|err| {
-                println!("Cannot flush stdout: {err}");
-                process::exit(2);
-            });
-
-            stdin().read_line(&mut buffer).unwrap_or_else(|err| {
-                println!("Cannot read user input: {err}");
-                process::exit(3);
-            });
-
-            print!("{buffer}");
-        },
+        false => read_user_input(),
     }
 
     Ok(())
