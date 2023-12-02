@@ -71,7 +71,15 @@ fn print_files(args: &Args) -> Result<(), lexopt::Error> {
                     println!("Cannot read file: {err}");
                     process::exit(1);
                 });
-                println!("{:?}", contents);
+
+                if args.number {
+                    for (index, line) in contents.lines().enumerate() {
+                        println!("     {}  {}", (index + 1), line);
+                    }
+                    println!();
+                } else {
+                    println!("{}", contents);
+                }
             }
         }
         false => read_user_input(),
