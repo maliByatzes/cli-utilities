@@ -1,75 +1,74 @@
 use std::fs;
-use std::io::ErrorKind;
 use std::io::stdout;
 use std::io::stdin;
 use std::io::Write;
+use std::process;
 
 struct Args {
-    file_path: String,
-    valid_file_path: bool,
+    files: Vec<String>,
     args_prov: bool,
 }
 
 fn parse_args() -> Result<Args, lexopt::Error> {
     use lexopt::prelude::*;
 
-    let mut file_path = None;
-    let valid_file_path = false;
+    let mut files = Vec::new();
     let mut args_prov = false;
     let mut parser = lexopt::Parser::from_env();
+
     while let Some(arg) = parser.next()? {
         match arg {
             Value(val) => {
-                file_path = Some(val.string()?);
-                args_prov = true;
+                files.push(val.string()?);
             }
             _ => return Err(arg.unexpected()),
         }
     }
 
+    if !files.is_empty() {
+        args_prov = true;
+    }
+
     Ok(Args {
-        file_path: match file_path {
-            Some(f) => f,
-            _ => "".to_owned(),
-        },
-        valid_file_path,
+        files,
         args_prov,
     })
 }
 
-fn main() -> Result<(), lexopt::Error> {
-    let mut args = parse_args()?;
-    let file_path = args.file_path;
-
-    println!("{}", file_path);
-
-    let file_contents = match fs::read_to_string(file_path) {
-        Ok(contents) => contents,
-        Err(err) => match err.kind() {
-            ErrorKind::NotFound => {
-                args.valid_file_path = false;
-                "".to_owned()
-            },
-            _ => "".to_owned(),
-        },
-    };
-
+fn print_files(args: &Args) -> Result<(), lexopt::Error> {
     if args.args_prov {
-        if args.valid_file_path {
-            println!("{}", file_contents);
+        for file_path in &args.files {
+            let contents = fs::read_to_string(file_path).unwrap_or_else(|err| {
+                println!("Cannot read file: {err}");
+                process::exit(1);
+            });
+
+            println!("{}", contents);
         }
     } else {
         loop {
             print!("> ");
-            stdout().flush().expect("Cannot flush output");
-
             let mut buffer = String::new();
-            stdin().read_line(&mut buffer)
-                .expect("Cannot read user input");
+            stdout().flush().unwrap_or_else(|err| {
+                println!("Cannot flush stdout: {err}");
+                process::exit(2);
+            });
 
-            println!("{buffer}");
+            stdin().read_line(&mut buffer).unwrap_or_else(|err| {
+                println!("Cannot read user input: {err}");
+                process::exit(3);
+            });
+
+            print!("{buffer}");
         }
     }
+    Ok(())
+}
+
+fn main() -> Result<(), lexopt::Error> {
+    let args = parse_args()?;
+    
+    print_files(&args)?;
 
     Ok(())
 }
