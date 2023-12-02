@@ -1,6 +1,6 @@
 use std::fs;
-use std::io::stdout;
 use std::io::stdin;
+use std::io::stdout;
 use std::io::Write;
 use std::process;
 
@@ -29,24 +29,21 @@ fn parse_args() -> Result<Args, lexopt::Error> {
         args_prov = true;
     }
 
-    Ok(Args {
-        files,
-        args_prov,
-    })
+    Ok(Args { files, args_prov })
 }
 
 fn print_files(args: &Args) -> Result<(), lexopt::Error> {
-    if args.args_prov {
-        for file_path in &args.files {
-            let contents = fs::read_to_string(file_path).unwrap_or_else(|err| {
-                println!("Cannot read file: {err}");
-                process::exit(1);
-            });
-
-            println!("{}", contents);
+    match args.args_prov {
+        true => {
+            for file_path in &args.files {
+                let contents = fs::read_to_string(file_path).unwrap_or_else(|err| {
+                    println!("Cannot read file: {err}");
+                    process::exit(1);
+                });
+                println!("{}", contents);
+            }
         }
-    } else {
-        loop {
+        false => loop {
             print!("> ");
             let mut buffer = String::new();
             stdout().flush().unwrap_or_else(|err| {
@@ -60,14 +57,15 @@ fn print_files(args: &Args) -> Result<(), lexopt::Error> {
             });
 
             print!("{buffer}");
-        }
+        },
     }
+
     Ok(())
 }
 
 fn main() -> Result<(), lexopt::Error> {
     let args = parse_args()?;
-    
+
     print_files(&args)?;
 
     Ok(())
