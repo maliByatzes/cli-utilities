@@ -8,8 +8,8 @@ name = "echom"
 path = "src/echom.rs"
 
 [[bin]]
-name = "cargo"
-path = "src/cargo.rs"
+name = "catg"
+path = "src/catg.rs"
 
 [dependencies]
 lexopt = "0.3.0"
