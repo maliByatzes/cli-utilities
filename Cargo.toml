@@ -5,11 +5,11 @@ edition = "2021"
 
 [[bin]]
 name = "echom"
-path = "src/echom.rs"
+path = "src/echom/echom.rs"
 
 [[bin]]
 name = "catg"
-path = "src/catg.rs"
+path = "src/catg/catg.rs"
 
 [dependencies]
 lexopt = "0.3.0"

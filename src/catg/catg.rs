@@ -8,6 +8,7 @@ struct Args {
     files: Vec<String>,
     args_prov: bool,
     number: bool,
+    show_all: bool,
 }
 
 fn parse_args() -> Result<Args, lexopt::Error> {
@@ -16,10 +17,14 @@ fn parse_args() -> Result<Args, lexopt::Error> {
     let mut files = Vec::new();
     let mut args_prov = false;
     let mut number = false;
+    let mut show_all = false;
     let mut parser = lexopt::Parser::from_env();
 
     while let Some(arg) = parser.next()? {
         match arg {
+            Short('A') | Long("--show-all") => {
+                show_all = true;
+            }
             Short('n') | Long("--number") => {
                 number = true;
             }
@@ -38,6 +43,7 @@ fn parse_args() -> Result<Args, lexopt::Error> {
         files,
         args_prov,
         number,
+        show_all,
     })
 }
 
@@ -63,23 +69,21 @@ fn print_files(args: &Args) -> Result<(), lexopt::Error> {
     match args.args_prov {
         true => {
             for file_path in &args.files {
-                /* Not ideal solution for now */
-                if file_path.trim() == "-" {
-                    read_user_input();
-                }
                 let contents = fs::read_to_string(file_path).unwrap_or_else(|err| {
-                    println!("Cannot read file: {err}");
+                    eprintln!("Cannot read file: {err}");
                     process::exit(1);
                 });
 
-                if args.number {
-                    for (index, line) in contents.lines().enumerate() {
-                        println!("     {}  {}", (index + 1), line);
-                    }
-                    println!();
-                } else {
-                    println!("{}", contents);
-                }
+                let lines = contents.lines().enumerate();
+                let print_line = match (args.number, args.show_all) {
+                    (true, true) => |(index, line)| println!("    {}  {}$", (index + 1), line),
+                    (true, false) => |(index, line)| println!("    {}  {}", (index + 1), line),
+                    (false, true) => |(_, line)| println!("{}$", line),
+                    (false, false) => |(_, line)| println!("{}", line),
+                };
+
+                lines.for_each(print_line);
+                println!();
             }
         }
         false => read_user_input(),
