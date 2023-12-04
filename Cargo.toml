@@ -11,5 +11,9 @@ path = "src/echom/echom.rs"
 name = "catg"
 path = "src/catg/catg.rs"
 
+[[bin]]
+name = "list"
+path = "src/list/list.rs"
+
 [dependencies]
 lexopt = "0.3.0"
