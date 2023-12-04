@@ -11,6 +11,16 @@ struct Args {
     show_all: bool,
 }
 
+fn print_usage() {
+    println!("Usage: catg [OPTION]... [FILE]...");
+    println!("Concantenate FILE(s) to standard output");
+    println!();
+    println!("With no FILE, or when FILE is -, read standard input");
+    println!("Options:");
+    println!("    -n, --number        number all output lines");
+    println!("    -A, --show-all      equavalent to -vET");
+}
+
 fn parse_args() -> Result<Args, lexopt::Error> {
     use lexopt::prelude::*;
 
@@ -22,11 +32,15 @@ fn parse_args() -> Result<Args, lexopt::Error> {
 
     while let Some(arg) = parser.next()? {
         match arg {
-            Short('A') | Long("--show-all") => {
+            Short('A') | Long("show-all") => {
                 show_all = true;
             }
-            Short('n') | Long("--number") => {
+            Short('n') | Long("number") => {
                 number = true;
+            }
+            Short('h') | Long("help") => {
+                print_usage();
+                process::exit(1);
             }
             Value(val) => {
                 files.push(val.string()?);
