@@ -1,10 +1,11 @@
 use std::fs;
-
 use lexopt::prelude::*;
 
 struct Args {
     directory: String,
 }
+
+/* TODO: Structure in a way where no args are neeede just `list` */
 
 fn parse_args() -> Result<Args, lexopt::Error> {
     let mut directory = None;
@@ -14,7 +15,7 @@ fn parse_args() -> Result<Args, lexopt::Error> {
         match arg {
             Value(val) if directory.is_none() => {
                 directory = Some(val.string()?);
-            } 
+            }
             _ => return Err(arg.unexpected()),
         }
     }
