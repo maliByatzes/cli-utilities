@@ -1,11 +1,12 @@
-use std::fs;
-use lexopt::prelude::*;
+use std::{fs, env, path::PathBuf};
 
+// TODO: Add args for FILE
+// TODO: Display items better
+
+/*
 struct Args {
     directory: String,
 }
-
-/* TODO: Structure in a way where no args are neeede just `list` */
 
 fn parse_args() -> Result<Args, lexopt::Error> {
     let mut directory = None;
@@ -24,9 +25,10 @@ fn parse_args() -> Result<Args, lexopt::Error> {
         directory: directory.ok_or("Missing argument [DIRECTORY]")?,
     })
 }
+*/
 
-fn list_files(directory: &str) -> Result<(), Box<dyn std::error::Error>> {
-    for entry in fs::read_dir(directory)? {
+fn list_files(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
@@ -40,7 +42,8 @@ fn list_files(directory: &str) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = parse_args()?;
-    list_files(&args.directory)?;
+    let path = env::current_dir()?;
+    // let args = parse_args()?;
+    list_files(&path)?;
     Ok(())
 }
