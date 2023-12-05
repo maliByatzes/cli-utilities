@@ -37,8 +37,7 @@ fn parse_args() -> Result<Args, lexopt::Error> {
     })
 }
 
-fn main() -> Result<(), lexopt::Error> {
-    let args = parse_args()?;
+fn print_message(args: &Args) {
     let mut message = args.message.join(" ");
     if args.interpret_escapes {
         // TODO: Implement escape characters
@@ -48,5 +47,10 @@ fn main() -> Result<(), lexopt::Error> {
         message.push('\n');
     }
     print!("{}", message);
+}
+
+fn main() -> Result<(), lexopt::Error> {
+    let args = parse_args()?;
+    print_message(&args);
     Ok(())
 }
